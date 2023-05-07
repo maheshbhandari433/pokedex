@@ -1,198 +1,97 @@
 const pokedex = document.getElementById('pokedex');
-const buttons = document.getElementById('buttons')
+const genButtons = document.getElementById('gen-buttons')  
+const typeButtons = document.getElementById('type-buttons')
 
 const promises = [];
+
 const getPokemon = () => {
   
-  for(let i = 1; i <= 100; i++) {
+  for(let i = 1; i <= 1000; i++) {
     const url = `https://pokeapi.co/api/v2/pokemon/${i}`;
     promises.push(fetch(url)
     .then(res => res.json()));
   }
-  console.log(promises)
+  /*  console.log(promises) */ 
   
+  /*  Resolving and mapping promises to extract data */
   Promise.all(promises).then(result => {
   const pokemon = result.map(data => ({
         id: data.id,
         name: data.name,
         image: data.sprites['front_default'],
+        types: data.types.map(type => type.type.name)
       }));
-     displayPokemon(pokemon) 
-     
- })
-};
+     displayPokemon(pokemon)
 
+     /* creating non-repeatable type value from all pokemon */
+     const uniqueTypes = new Set();
+     pokemon.forEach(poke => {
+       poke.types.forEach(type => uniqueTypes.add(type));
+     });
+    
+     /* creating buttons with type name */
+      uniqueTypes.forEach(type => {
+      const button = document.createElement('button');
+      button.textContent = type;
+      button.addEventListener('click', () => {
+        const filteredPokemon = pokemon.filter(p => p.types.includes(type));
+        displayPokemon(filteredPokemon);
+      })
+      typeButtons.appendChild(button);
+    })
+ })
+}; 
+
+
+/* function displays pokemon. Takes pokemon array an an argument */
 const displayPokemon = (pokemon) => {
 const pokemonString = pokemon.map(singlePokemon => `
     <li>
       <img src="${singlePokemon.image}" />
       <h4>${singlePokemon.id}. ${singlePokemon.name}</h4>
+      <p>Type: ${singlePokemon.types}</p>
     </li>`
   ).join("");
   
   pokedex.innerHTML = pokemonString;
   
 };
-
 getPokemon()
 
  
-const displayButton = () => {
-const buttonArr = []
+/* creates buttons for all the generation */
+const displayGenButton = () => {
+const genButtonArr = []
 
-  for (let i=1; i<=8; i++) {
-  let singleButton = `<button>Gen ${i}</button>`
-  buttonArr.push(singleButton)
-  }
-   
-  buttons.innerHTML = buttonArr.join('')
+  for (let i=1; i<=10; i++) {
+  let singleButton = `<button data-gen="${i}">Gen ${i}</button>`
+  genButtonArr.push(singleButton)
+  } 
+  genButtons.innerHTML = genButtonArr.join('')
 }
-
-displayButton() 
- 
-
-/* const displayPokGen = (singlePokGen) => {
-  const pokemonGenString = singlePokGen.map(singlePokemonGen => `
-    <li>
-      <img src="${singlePokemonGen['gen-i']}" />
-    </li>`
-  ).join("");
-  
-  pokedex.innerHTML = pokemonGenString; 
-  
-
-} */
+displayGenButton() 
 
 
-
+/* displays pokemon of specific generation */
 const getPokemonGen = (e) => {
-Promise.all(promises).then(result => {
-const pokemonGen = result.map(data => ({
-          id: data.id,
-          name: data.name,
-          'gen-i' : data.sprites.versions['generation-i'],
-          'gen-ii' : data.sprites.versions['generation-ii'],
-          'gen-iii' : data.sprites.versions['generation-iii'],
-          'gen-iv' : data.sprites.versions['generation-iv'],
-          'gen-v' : data.sprites.versions['generation-v'],
-          'gen-vi' : data.sprites.versions['generation-vi'],
-          'gen-vii' : data.sprites.versions['generation-vii'],
-          'gen-viii' : data.sprites.versions['generation-viii']
-        }));
-      })
+  
+    const genNum = e.target.getAttribute('data-gen');
+    const start = (genNum - 1) * 100;
+    const end = genNum * 100;
+    
+    Promise.all(promises.slice(start, end)).then(result => {
+      const pokemon = result.map(data => ({
+        id: data.id,
+        name: data.name,
+        image: data.sprites['front_default'],
+        types: data.types.map(type => type.type.name)
+      }));
+      displayPokemon(pokemon);
+    });
+};
 
-
-  Promise.all(promises).then(result => {
-  const singlePokemonGen = result.map(singlePokGen => ({
-          id: singlePokGen.id,
-          name: singlePokGen.name,
-        'gen-i' : singlePokGen.sprites.versions['generation-i']["red-blue"]["front_default"],
-        'gen-ii' : singlePokGen.sprites.versions['generation-ii']["crystal"]["back_default"],
-        'gen-iii' : singlePokGen.sprites.versions['generation-iii']["emerald"]["front_default"],
-        'gen-iv' : singlePokGen.sprites.versions['generation-iv']["diamond-pearl"]["back_default"],
-        'gen-v' : singlePokGen.sprites.versions['generation-v']["black-white"]["back_default"],
-        'gen-vi' : singlePokGen.sprites.versions['generation-vi']["omegaruby-alphasapphire"]["front_default"],
-        'gen-vii' : singlePokGen.sprites.versions['generation-vii']["icons"]["front_default"],
-        'gen-viii' : singlePokGen.sprites.versions['generation-viii']["icons"]["front_default"],
-        
-        }))
-       
-
-        
-if(e.target.innerHTML === 'Gen 1') {
-  const pokemonGenIString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-i']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-pokedex.innerHTML = pokemonGenIString; 
-}
+genButtons.addEventListener('click', getPokemonGen);
  
-else if(e.target.innerHTML === 'Gen 2') {
-  const pokemonGenIIString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-ii']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenIIString;
-}
-
-else if(e.target.innerHTML === 'Gen 3') {
-  const pokemonGenIIIString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-iii']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenIIIString;
-}
-  
-else if(e.target.innerHTML === 'Gen 4') {
-  const pokemonGenIVString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-iv']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenIVString;
-}
-
-else if(e.target.innerHTML === 'Gen 5') {
-  const pokemonGenVString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-v']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenVString;
-}
-
-else if(e.target.innerHTML === 'Gen 6') {
-  const pokemonGenVIString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-vi']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenVIString;
-}
-
-else if(e.target.innerHTML === 'Gen 7') {
-  const pokemonGenVIIString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-vii']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenVIIString;
-}
-
-else if(e.target.innerHTML === 'Gen 8') {
-  const pokemonGenVIIIString = singlePokemonGen.map(singlePokGenGroup => `
-  <li>
-    <img src="${singlePokGenGroup['gen-viii']}" />
-    <p>${singlePokGenGroup.name}</p>
-  </li>`
-).join("");
-  
-   pokedex.innerHTML = pokemonGenVIIIString;
-}
-  
-})
-
- 
-}
- 
-
-buttons.addEventListener('click', getPokemonGen)
 
 
 

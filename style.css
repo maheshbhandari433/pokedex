@@ -39,12 +39,23 @@
     transform: scale(1.2);
   }
 
-  #buttons {
+  #gen-buttons {
     display: flex;
     justify-content: center;
     padding-bottom: 2em;
     position: sticky;
     top: 0;
+    margin: 1em;
+  }
+
+  #type-buttons {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 2em;
+    position: sticky;
+    top: 60;
+    margin: 1em;
+    opacity: 80%
   }
 
    button {
