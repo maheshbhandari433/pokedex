@@ -8,7 +8,7 @@
 
 ## Live
 
-https://public.bc.fi/s2300094/pokemon/
+https://public.bc.fi/s2300094/poke-dex/
 
 ## How it works:
 
